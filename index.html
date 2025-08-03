@@ -22,21 +22,25 @@
     <div class="main-container">
         <!-- Control Bar -->
         <div class="controls-bar">
-            <button class="control-btn" onclick="toggleTheme()">
+            <button class="control-btn" onclick="toggleTheme()" title="Toggle theme (T)">
                 <i class="fas fa-moon" id="themeIcon"></i>
                 <span>Theme</span>
             </button>
-            <button class="control-btn" onclick="openCustomization()">
+            <button class="control-btn" onclick="openCustomization()" title="Customize appearance">
                 <i class="fas fa-palette"></i>
                 <span>Customize</span>
             </button>
-            <button class="control-btn" onclick="toggleTimeFormat()">
+            <button class="control-btn" onclick="toggleTimeFormat()" title="Toggle time format (F)">
                 <i class="fas fa-clock"></i>
                 <span id="timeFormatBtn">24H</span>
             </button>
-            <button class="control-btn" onclick="toggleAudio()">
+            <button class="control-btn" onclick="toggleAudio()" title="Toggle audio (M)">
                 <i class="fas fa-volume-up" id="audioIcon"></i>
                 <span>Audio</span>
+            </button>
+            <button class="control-btn" onclick="openHelp()" title="Show keyboard shortcuts">
+                <i class="fas fa-question-circle"></i>
+                <span>Help</span>
             </button>
         </div>
 
@@ -50,12 +54,6 @@
             </button>
             <button class="tab-btn" onclick="showTab('timer')">
                 <i class="fas fa-hourglass-half"></i> Timer
-            </button>
-            <button class="tab-btn" onclick="showTab('pomodoro')">
-                <i class="fas fa-brain"></i> Pomodoro
-            </button>
-            <button class="tab-btn" onclick="showTab('productivity')">
-                <i class="fas fa-tasks"></i> Productivity
             </button>
         </div>
 
@@ -84,12 +82,20 @@
 
                 <!-- Stopwatch Tab -->
                 <div id="stopwatchTab" class="tab-content hidden">
-                    <div class="timer-display" id="stopwatchDisplay">00:00:00</div>
+                    <div class="timer-display" id="stopwatchDisplay">00:00:00.00</div>
                     <div class="timer-controls">
-                        <button class="timer-btn" onclick="startStopwatch()">Start</button>
-                        <button class="timer-btn" onclick="pauseStopwatch()">Pause</button>
-                        <button class="timer-btn" onclick="resetStopwatch()">Reset</button>
-                        <button class="timer-btn" onclick="lapStopwatch()">Lap</button>
+                        <button class="timer-btn" onclick="startStopwatch()" title="Start the stopwatch">
+                            <i class="fas fa-play"></i> Start
+                        </button>
+                        <button class="timer-btn" onclick="pauseStopwatch()" title="Pause the stopwatch">
+                            <i class="fas fa-pause"></i> Pause
+                        </button>
+                        <button class="timer-btn" onclick="resetStopwatch()" title="Reset the stopwatch">
+                            <i class="fas fa-stop"></i> Reset
+                        </button>
+                        <button class="timer-btn" onclick="lapStopwatch()" title="Record a lap time">
+                            <i class="fas fa-flag"></i> Lap
+                        </button>
                     </div>
                     <div id="lapTimes"></div>
                 </div>
@@ -97,49 +103,24 @@
                 <!-- Timer Tab -->
                 <div id="timerTab" class="tab-content hidden">
                     <div class="timer-input">
-                        <input type="number" id="timerHours" placeholder="00" min="0" max="23">
+                        <input type="number" id="timerHours" placeholder="Hours" min="0" max="23" title="Hours (0-23)">
                         <span>:</span>
-                        <input type="number" id="timerMinutes" placeholder="00" min="0" max="59">
+                        <input type="number" id="timerMinutes" placeholder="Minutes" min="0" max="59" title="Minutes (0-59)">
                         <span>:</span>
-                        <input type="number" id="timerSeconds" placeholder="00" min="0" max="59">
+                        <input type="number" id="timerSeconds" placeholder="Seconds" min="0" max="59" title="Seconds (0-59)">
                     </div>
                     <div class="timer-display" id="timerDisplay">00:00:00</div>
                     <div class="timer-controls">
-                        <button class="timer-btn" onclick="startTimer()">Start</button>
-                        <button class="timer-btn" onclick="pauseTimer()">Pause</button>
-                        <button class="timer-btn" onclick="resetTimer()">Reset</button>
+                        <button class="timer-btn" onclick="startTimer()" title="Start the timer">
+                            <i class="fas fa-play"></i> Start
+                        </button>
+                        <button class="timer-btn" onclick="pauseTimer()" title="Pause the timer">
+                            <i class="fas fa-pause"></i> Pause
+                        </button>
+                        <button class="timer-btn" onclick="resetTimer()" title="Reset the timer">
+                            <i class="fas fa-stop"></i> Reset
+                        </button>
                     </div>
-                </div>
-
-                <!-- Pomodoro Tab -->
-                <div id="pomodoroTab" class="tab-content hidden">
-                    <div class="timer-display" id="pomodoroDisplay">25:00</div>
-                    <div class="pomodoro-progress">
-                        <div class="pomodoro-bar" id="pomodoroBar"></div>
-                    </div>
-                    <div id="pomodoroStatus">Focus Session</div>
-                    <div class="timer-controls">
-                        <button class="timer-btn" onclick="startPomodoro()">Start</button>
-                        <button class="timer-btn" onclick="pausePomodoro()">Pause</button>
-                        <button class="timer-btn" onclick="resetPomodoro()">Reset</button>
-                        <button class="timer-btn" onclick="skipPomodoro()">Skip</button>
-                    </div>
-                </div>
-
-                <!-- Productivity Tab -->
-                <div id="productivityTab" class="tab-content hidden">
-                    <div class="section-title">
-                        <i class="fas fa-sticky-note"></i>
-                        Quick Notes
-                    </div>
-                    <textarea class="notes-area" id="notesArea" placeholder="Write your notes here..."></textarea>
-                    
-                    <div class="section-title" style="margin-top: 20px;">
-                        <i class="fas fa-list-check"></i>
-                        To-Do List
-                    </div>
-                    <input type="text" class="todo-input" id="todoInput" placeholder="Add new task..." onkeypress="handleTodoKeyPress(event)">
-                    <div id="todoList"></div>
                 </div>
             </div>
 
@@ -175,32 +156,125 @@
     <!-- Customization Modal -->
     <div id="customizationModal" class="modal hidden">
         <div class="modal-content">
-            <h2>Customization</h2>
-            
-            <h3>Background Gradient</h3>
-            <div class="color-picker">
-                <div class="color-option" style="background: linear-gradient(135deg, #56ccf2, #2f80ed)" onclick="setGradient('56ccf2', '2f80ed')"></div>
-                <div class="color-option" style="background: linear-gradient(135deg, #667eea, #764ba2)" onclick="setGradient('667eea', '764ba2')"></div>
-                <div class="color-option" style="background: linear-gradient(135deg, #f093fb, #f5576c)" onclick="setGradient('f093fb', 'f5576c')"></div>
-                <div class="color-option" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" onclick="setGradient('4facfe', '00f2fe')"></div>
-                <div class="color-option" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" onclick="setGradient('43e97b', '38f9d7')"></div>
-                <div class="color-option" style="background: linear-gradient(135deg, #fa709a, #fee140)" onclick="setGradient('fa709a', 'fee140')"></div>
-                <div class="color-option" style="background: linear-gradient(135deg, #a8edea, #fed6e3)" onclick="setGradient('a8edea', 'fed6e3')"></div>
-                <div class="color-option" style="background: linear-gradient(135deg, #ff9a9e, #fecfef)" onclick="setGradient('ff9a9e', 'fecfef')"></div>
+            <div class="modal-header">
+                <h2><i class="fas fa-palette"></i> Customization</h2>
+                <button class="modal-close-btn" onclick="closeCustomization()" title="Close">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             
-            <h3>Custom Background Image</h3>
-            <input type="file" id="backgroundUpload" accept="image/*" onchange="setCustomBackground(event)">
+            <div class="customization-section">
+                <h3><i class="fas fa-fill-drip"></i> Background Gradients</h3>
+                <p class="section-description">Choose from beautiful gradient presets</p>
+                <div class="color-picker">
+                    <div class="color-option" style="background: linear-gradient(135deg, #56ccf2, #2f80ed)" onclick="setGradient('56ccf2', '2f80ed')" title="Ocean Breeze"></div>
+                    <div class="color-option" style="background: linear-gradient(135deg, #667eea, #764ba2)" onclick="setGradient('667eea', '764ba2')" title="Purple Dream"></div>
+                    <div class="color-option" style="background: linear-gradient(135deg, #f093fb, #f5576c)" onclick="setGradient('f093fb', 'f5576c')" title="Pink Sunset"></div>
+                    <div class="color-option" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" onclick="setGradient('4facfe', '00f2fe')" title="Cyber Blue"></div>
+                    <div class="color-option" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" onclick="setGradient('43e97b', '38f9d7')" title="Forest Fresh"></div>
+                    <div class="color-option" style="background: linear-gradient(135deg, #fa709a, #fee140)" onclick="setGradient('fa709a', 'fee140')" title="Warm Sunset"></div>
+                    <div class="color-option" style="background: linear-gradient(135deg, #a8edea, #fed6e3)" onclick="setGradient('a8edea', 'fed6e3')" title="Soft Clouds"></div>
+                    <div class="color-option" style="background: linear-gradient(135deg, #ff9a9e, #fecfef)" onclick="setGradient('ff9a9e', 'fecfef')" title="Rose Gold"></div>
+                </div>
+            </div>
+            
+            <div class="customization-section">
+                <h3><i class="fas fa-image"></i> Custom Background</h3>
+                <p class="section-description">Upload your own background image (max 5MB)</p>
+                <div class="file-upload-container">
+                    <input type="file" id="backgroundUpload" accept="image/*" onchange="setCustomBackground(event)">
+                    <label for="backgroundUpload" class="file-upload-label">
+                        <i class="fas fa-upload"></i>
+                        Choose Image
+                    </label>
+                </div>
+                <div class="upload-info">
+                    <small>Supported formats: JPG, PNG, GIF, WebP</small>
+                </div>
+            </div>
+            
+            <div class="customization-section">
+                <h3><i class="fas fa-cog"></i> Settings</h3>
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="autoTimeGradient" onchange="toggleAutoTimeGradient()">
+                            <span class="checkmark"></span>
+                            Auto time-based colors
+                        </label>
+                        <small>Automatically adjust colors based on time of day</small>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="range" id="backgroundOpacity" min="0.3" max="1" step="0.1" value="1" onchange="updateBackgroundOpacity(this.value)">
+                            <span>Background Opacity: <span id="opacityValue">100%</span></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="timer-btn secondary" onclick="resetBackground()">
+                    <i class="fas fa-undo"></i> Reset to Default
+                </button>
+                <button class="timer-btn" onclick="closeCustomization()">
+                    <i class="fas fa-check"></i> Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal hidden">
+        <div class="modal-content">
+            <h2><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h2>
+            
+            <div class="help-section">
+                <h3>Navigation</h3>
+                <div class="shortcut-item">
+                    <span class="key">1</span>
+                    <span>Switch to Clock</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="key">2</span>
+                    <span>Switch to Stopwatch</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="key">3</span>
+                    <span>Switch to Timer</span>
+                </div>
+            </div>
+            
+            <div class="help-section">
+                <h3>Controls</h3>
+                <div class="shortcut-item">
+                    <span class="key">Space</span>
+                    <span>Start/Pause current timer</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="key">R</span>
+                    <span>Reset current timer</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="key">T</span>
+                    <span>Toggle theme</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="key">F</span>
+                    <span>Toggle time format</span>
+                </div>
+                <div class="shortcut-item">
+                    <span class="key">M</span>
+                    <span>Toggle audio</span>
+                </div>
+            </div>
             
             <div style="margin-top: 20px;">
-                <button class="timer-btn" onclick="closeCustomization()">Close</button>
-                <button class="timer-btn" onclick="resetBackground()">Reset Background</button>
+                <button class="timer-btn" onclick="closeHelp()">Close</button>
             </div>
         </div>
     </div>
 
     <script src="script.js"></script>
-</body>
-</html>
 </body>
 </html>
