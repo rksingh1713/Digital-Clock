@@ -23,7 +23,7 @@
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        max-width: 400px;
+        max-width: 500px;
     }
     .time {
         color: #e8f4f8;
@@ -143,11 +143,45 @@ function fetchWeather() {
             const lat = pos.coords.latitude;
             const lon = pos.coords.longitude;
             const apiKey = "dd6a7e5451e86c14dcf5531b155bb2ac";
+            
+            // First get weather data
             fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`)
                 .then(res => res.json())
-                .then(data => {
-                    document.getElementById('weather').textContent =
-                        `${data.name}: ${Math.round(data.main.temp)}°C, ${data.weather[0].main}`;
+                .then(weatherData => {
+                    const temperature = Math.round(weatherData.main.temp);
+                    
+                    // Then get location details using reverse geocoding
+                    fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${apiKey}`)
+                        .then(res => res.json())
+                        .then(locationData => {
+                            if (locationData && locationData.length > 0) {
+                                const location = locationData[0];
+                                let area = location.name || weatherData.name;
+                                const city = location.state || location.country || weatherData.name;
+                                
+                                // Clean up long municipal corporation names
+                                area = area.replace(/\s*(Municipal Corporation|Corporation|Municipality|Nagar Palika|Nagar Nigam)\s*/gi, '');
+                                area = area.replace(/\s*(Ward|Zone|District|Tehsil)\s*\d+/gi, '');
+                                area = area.trim();
+                                
+                                // If area is empty after cleanup, use weather API name
+                                if (!area || area.length < 2) {
+                                    area = weatherData.name;
+                                }
+                                
+                                document.getElementById('weather').textContent =
+                                    `${area}, ${temperature}°C, ${city}`;
+                            } else {
+                                // Fallback to weather API city name
+                                document.getElementById('weather').textContent =
+                                    `${weatherData.name}, ${temperature}°C, ${weatherData.sys.country}`;
+                            }
+                        })
+                        .catch(() => {
+                            // Fallback to weather API data only
+                            document.getElementById('weather').textContent =
+                                `${weatherData.name}, ${temperature}°C, ${weatherData.sys.country}`;
+                        });
                 })
                 .catch(() => {
                     document.getElementById('weather').textContent = "Weather unavailable";
