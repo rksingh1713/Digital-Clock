@@ -4,200 +4,203 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Premium Stylish Digital Clock</title>
-<style>
-    body {
-        margin: 0;
-        padding: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        font-family: 'Segoe UI', sans-serif;
-        transition: background 1s ease-in-out;
-    }
-    .clock-container {
-        text-align: center;
-        padding: 20px 25px;
-        border-radius: 15px;
-        background: rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        max-width: 500px;
-    }
-    .time {
-        color: #e8f4f8;
-        font-size: 6vw;
-        font-weight: 600;
-        text-shadow: 0 0 15px rgba(232,244,248,0.5);
-    }
-    .ampm {
-        color: #b3d9ff;
-        font-size: 1.5vw;
-        font-weight: 500;
-        margin-left: 8px;
-    }
-    .date {
-        color: #d1e7dd;
-        font-size: 2.2vw;
-        margin-top: 8px;
-    }
-    .weather {
-        margin-top: 8px;
-        font-size: 1.2vw;
-        color: #a8dadc;
-    }
-    canvas {
-        margin-top: 12px;
-        background: rgba(255,255,255,0.05);
-        border-radius: 50%;
-    }
-    @media (max-width: 600px) {
-        .time { font-size: 12vw; }
-        .ampm { font-size: 4vw; }
-        .date { font-size: 5vw; }
-        .weather { font-size: 4vw; }
-        canvas { width: 180px; height: 180px; }
-        .clock-container { padding: 15px 20px; }
-    }
-</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-theme="dark">
+    <!-- Audio elements for features -->
+    <audio id="hourlyChime" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBDWI0fPTdisFK3vK8dSNOwaS1/HTdS0CJnfH8N2QQAoUXrTp66hVFAtWpOPwtmMcBjSJ0fPTdisFK3vK8dSNOw" type="audio/wav">
+    </audio>
+    <audio id="alarmSound" preload="auto" loop>
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBDWI0fPTdisFK3vK8dSNOwaS1/HTdS0CJnfH8N2QQAoUXrTp66hVFAtWpOPwtmMcBjSJ0fPTdisFK3vK8dSNOw" type="audio/wav">
+    </audio>
+    <audio id="ambientRain" preload="auto" loop>
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBDWI0fPTdisFK3vK8dSNOwaS1/HTdS0CJnfH8N2QQAoUXrTp66hVFAtWpOPwtmMcBjSJ0fPTdisFK3vK8dSNOw" type="audio/wav">
+    </audio>
 
-<div class="clock-container">
-    <div class="time" id="time">00:00:00<span class="ampm" id="ampm">AM</span></div>
-    <div class="date" id="date">Loading...</div>
-    <div class="weather" id="weather">Fetching weather...</div>
-    <canvas id="analogClock" width="220" height="220"></canvas>
-</div>
+    <div class="main-container">
+        <!-- Control Bar -->
+        <div class="controls-bar">
+            <button class="control-btn" onclick="toggleTheme()">
+                <i class="fas fa-moon" id="themeIcon"></i>
+                <span>Theme</span>
+            </button>
+            <button class="control-btn" onclick="openCustomization()">
+                <i class="fas fa-palette"></i>
+                <span>Customize</span>
+            </button>
+            <button class="control-btn" onclick="toggleTimeFormat()">
+                <i class="fas fa-clock"></i>
+                <span id="timeFormatBtn">24H</span>
+            </button>
+            <button class="control-btn" onclick="toggleAudio()">
+                <i class="fas fa-volume-up" id="audioIcon"></i>
+                <span>Audio</span>
+            </button>
+        </div>
 
-<script>
-function updateClock() {
-    const now = new Date();
-    let hours = now.getHours();
-    let ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12;
-    hours = hours.toString().padStart(2, '0');
-    let minutes = now.getMinutes().toString().padStart(2, '0');
-    let seconds = now.getSeconds().toString().padStart(2, '0');
-    document.getElementById('time').innerHTML =
-        `${hours}:${minutes}:${seconds}<span class="ampm">${ampm}</span>`;
-    const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-    const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-    document.getElementById('date').textContent =
-        `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-    if (now.getHours() >= 6 && now.getHours() < 18) {
-        document.body.style.background = "linear-gradient(135deg, #56ccf2, #2f80ed)";
-    } else {
-        document.body.style.background = "linear-gradient(135deg, #0f2027, #203a43, #2c5364)";
-    }
-}
-function drawAnalogClock() {
-    const canvas = document.getElementById('analogClock');
-    const ctx = canvas.getContext('2d');
-    const now = new Date();
-    const radius = canvas.height / 2;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.translate(radius, radius);
-    ctx.beginPath();
-    ctx.arc(0, 0, radius - 5, 0, 2 * Math.PI);
-    ctx.fillStyle = "rgba(255,255,255,0.05)";
-    ctx.fill();
-    ctx.font = radius * 0.15 + "px Arial";
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "center";
-    ctx.fillStyle = "#fff";
-    for (let num = 1; num <= 12; num++) {
-        const ang = num * Math.PI / 6;
-        ctx.rotate(ang);
-        ctx.translate(0, -radius * 0.85);
-        ctx.rotate(-ang);
-        ctx.fillText(num.toString(), 0, 0);
-        ctx.rotate(ang);
-        ctx.translate(0, radius * 0.85);
-        ctx.rotate(-ang);
-    }
-    function drawHand(pos, length, width, color = "#fff") {
-        ctx.beginPath();
-        ctx.lineWidth = width;
-        ctx.lineCap = "round";
-        ctx.strokeStyle = color;
-        ctx.moveTo(0, 0);
-        ctx.rotate(pos);
-        ctx.lineTo(0, -length);
-        ctx.stroke();
-        ctx.rotate(-pos);
-    }
-    let hour = now.getHours() % 12;
-    hour = (hour * Math.PI / 6) + (now.getMinutes() * Math.PI / (6 * 60));
-    drawHand(hour, radius * 0.5, radius * 0.07);
-    let minute = (now.getMinutes() * Math.PI / 30) + (now.getSeconds() * Math.PI / (30 * 60));
-    drawHand(minute, radius * 0.8, radius * 0.07);
-    let second = now.getSeconds() * Math.PI / 30;
-    drawHand(second, radius * 0.9, radius * 0.02, "red");
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-}
-function fetchWeather() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-            const lat = pos.coords.latitude;
-            const lon = pos.coords.longitude;
-            const apiKey = "dd6a7e5451e86c14dcf5531b155bb2ac";
-            
-            // First get weather data
-            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${apiKey}`)
-                .then(res => res.json())
-                .then(weatherData => {
-                    const temperature = Math.round(weatherData.main.temp);
+        <!-- Tab Navigation -->
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="showTab('clock')">
+                <i class="fas fa-clock"></i> Clock
+            </button>
+            <button class="tab-btn" onclick="showTab('stopwatch')">
+                <i class="fas fa-stopwatch"></i> Stopwatch
+            </button>
+            <button class="tab-btn" onclick="showTab('timer')">
+                <i class="fas fa-hourglass-half"></i> Timer
+            </button>
+            <button class="tab-btn" onclick="showTab('pomodoro')">
+                <i class="fas fa-brain"></i> Pomodoro
+            </button>
+            <button class="tab-btn" onclick="showTab('productivity')">
+                <i class="fas fa-tasks"></i> Productivity
+            </button>
+        </div>
+
+        <div class="content-container">
+            <!-- Main Clock Container -->
+            <div class="clock-container">
+                <!-- Clock Tab -->
+                <div id="clockTab" class="tab-content">
+                    <div class="time" id="time">00:00:00<span class="ampm" id="ampm">AM</span></div>
+                    <div class="date" id="date">Loading...</div>
                     
-                    // Then get location details using reverse geocoding
-                    fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${apiKey}`)
-                        .then(res => res.json())
-                        .then(locationData => {
-                            if (locationData && locationData.length > 0) {
-                                const location = locationData[0];
-                                let area = location.name || weatherData.name;
-                                const city = location.state || location.country || weatherData.name;
-                                
-                                // Clean up long municipal corporation names
-                                area = area.replace(/\s*(Municipal Corporation|Corporation|Municipality|Nagar Palika|Nagar Nigam)\s*/gi, '');
-                                area = area.replace(/\s*(Ward|Zone|District|Tehsil)\s*\d+/gi, '');
-                                area = area.trim();
-                                
-                                // If area is empty after cleanup, use weather API name
-                                if (!area || area.length < 2) {
-                                    area = weatherData.name;
-                                }
-                                
-                                document.getElementById('weather').textContent =
-                                    `${area}, ${temperature}°C, ${city}`;
-                            } else {
-                                // Fallback to weather API city name
-                                document.getElementById('weather').textContent =
-                                    `${weatherData.name}, ${temperature}°C, ${weatherData.sys.country}`;
-                            }
-                        })
-                        .catch(() => {
-                            // Fallback to weather API data only
-                            document.getElementById('weather').textContent =
-                                `${weatherData.name}, ${temperature}°C, ${weatherData.sys.country}`;
-                        });
-                })
-                .catch(() => {
-                    document.getElementById('weather').textContent = "Weather unavailable";
-                });
-        });
-    } else {
-        document.getElementById('weather').textContent = "Location not allowed";
-    }
-}
-setInterval(() => {
-    updateClock();
-    drawAnalogClock();
-}, 1000);
-updateClock();
-drawAnalogClock();
-fetchWeather();
-</script>
+                    <div class="weather-container">
+                        <div class="weather-main">
+                            <span class="weather-icon" id="weatherIcon">🌤️</span>
+                            <span class="weather-temp" id="weatherTemp">--°C</span>
+                        </div>
+                        <div class="weather-desc" id="weatherDesc">Fetching weather...</div>
+                        <div class="weather-details" id="weatherDetails"></div>
+                        <div class="weather-forecast" id="weatherForecast"></div>
+                    </div>
+
+                    <div class="analog-clock-container">
+                        <canvas id="analogClock" width="220" height="220"></canvas>
+                    </div>
+                </div>
+
+                <!-- Stopwatch Tab -->
+                <div id="stopwatchTab" class="tab-content hidden">
+                    <div class="timer-display" id="stopwatchDisplay">00:00:00</div>
+                    <div class="timer-controls">
+                        <button class="timer-btn" onclick="startStopwatch()">Start</button>
+                        <button class="timer-btn" onclick="pauseStopwatch()">Pause</button>
+                        <button class="timer-btn" onclick="resetStopwatch()">Reset</button>
+                        <button class="timer-btn" onclick="lapStopwatch()">Lap</button>
+                    </div>
+                    <div id="lapTimes"></div>
+                </div>
+
+                <!-- Timer Tab -->
+                <div id="timerTab" class="tab-content hidden">
+                    <div class="timer-input">
+                        <input type="number" id="timerHours" placeholder="00" min="0" max="23">
+                        <span>:</span>
+                        <input type="number" id="timerMinutes" placeholder="00" min="0" max="59">
+                        <span>:</span>
+                        <input type="number" id="timerSeconds" placeholder="00" min="0" max="59">
+                    </div>
+                    <div class="timer-display" id="timerDisplay">00:00:00</div>
+                    <div class="timer-controls">
+                        <button class="timer-btn" onclick="startTimer()">Start</button>
+                        <button class="timer-btn" onclick="pauseTimer()">Pause</button>
+                        <button class="timer-btn" onclick="resetTimer()">Reset</button>
+                    </div>
+                </div>
+
+                <!-- Pomodoro Tab -->
+                <div id="pomodoroTab" class="tab-content hidden">
+                    <div class="timer-display" id="pomodoroDisplay">25:00</div>
+                    <div class="pomodoro-progress">
+                        <div class="pomodoro-bar" id="pomodoroBar"></div>
+                    </div>
+                    <div id="pomodoroStatus">Focus Session</div>
+                    <div class="timer-controls">
+                        <button class="timer-btn" onclick="startPomodoro()">Start</button>
+                        <button class="timer-btn" onclick="pausePomodoro()">Pause</button>
+                        <button class="timer-btn" onclick="resetPomodoro()">Reset</button>
+                        <button class="timer-btn" onclick="skipPomodoro()">Skip</button>
+                    </div>
+                </div>
+
+                <!-- Productivity Tab -->
+                <div id="productivityTab" class="tab-content hidden">
+                    <div class="section-title">
+                        <i class="fas fa-sticky-note"></i>
+                        Quick Notes
+                    </div>
+                    <textarea class="notes-area" id="notesArea" placeholder="Write your notes here..."></textarea>
+                    
+                    <div class="section-title" style="margin-top: 20px;">
+                        <i class="fas fa-list-check"></i>
+                        To-Do List
+                    </div>
+                    <input type="text" class="todo-input" id="todoInput" placeholder="Add new task..." onkeypress="handleTodoKeyPress(event)">
+                    <div id="todoList"></div>
+                </div>
+            </div>
+
+            <!-- Side Panel -->
+            <div class="side-panel">
+                <!-- Calendar -->
+                <div class="panel-section">
+                    <div class="section-title">
+                        <i class="fas fa-calendar"></i>
+                        Calendar
+                    </div>
+                    <div class="calendar-nav">
+                        <button class="calendar-nav-btn" onclick="previousMonth()">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <div class="calendar-month-year" id="calendarMonth"></div>
+                        <button class="calendar-nav-btn" onclick="nextMonth()">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div class="calendar-date-input">
+                        <input type="date" id="dateInput" onchange="goToSpecificDate()" placeholder="Select date...">
+                        <button class="calendar-nav-btn" onclick="goToToday()" title="Go to Today">
+                            <i class="fas fa-calendar-day"></i>
+                        </button>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customization Modal -->
+    <div id="customizationModal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Customization</h2>
+            
+            <h3>Background Gradient</h3>
+            <div class="color-picker">
+                <div class="color-option" style="background: linear-gradient(135deg, #56ccf2, #2f80ed)" onclick="setGradient('56ccf2', '2f80ed')"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #667eea, #764ba2)" onclick="setGradient('667eea', '764ba2')"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #f093fb, #f5576c)" onclick="setGradient('f093fb', 'f5576c')"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #4facfe, #00f2fe)" onclick="setGradient('4facfe', '00f2fe')"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #43e97b, #38f9d7)" onclick="setGradient('43e97b', '38f9d7')"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #fa709a, #fee140)" onclick="setGradient('fa709a', 'fee140')"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #a8edea, #fed6e3)" onclick="setGradient('a8edea', 'fed6e3')"></div>
+                <div class="color-option" style="background: linear-gradient(135deg, #ff9a9e, #fecfef)" onclick="setGradient('ff9a9e', 'fecfef')"></div>
+            </div>
+            
+            <h3>Custom Background Image</h3>
+            <input type="file" id="backgroundUpload" accept="image/*" onchange="setCustomBackground(event)">
+            
+            <div style="margin-top: 20px;">
+                <button class="timer-btn" onclick="closeCustomization()">Close</button>
+                <button class="timer-btn" onclick="resetBackground()">Reset Background</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
 </body>
 </html>
