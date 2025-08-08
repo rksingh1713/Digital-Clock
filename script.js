@@ -11,7 +11,7 @@ let customBackground = null;
 let stopwatchRunning = false;
 let stopwatchTime = 0;
 let stopwatchInterval = null; 
-let lapCounter = 1; 
+let lapCounter = 1;  
 
 let timerRunning = false;
 let timerTime = 0;
