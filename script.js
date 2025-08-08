@@ -9,7 +9,7 @@ let customBackground = null;
 
 // Timer Variables
 let stopwatchRunning = false;
-let stopwatchTime = 0;
+let stopwatchTime = 0;  
 let stopwatchInterval = null; 
 let lapCounter = 1;  
 
